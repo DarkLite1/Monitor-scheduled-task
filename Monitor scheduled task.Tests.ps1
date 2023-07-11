@@ -20,6 +20,9 @@ BeforeAll {
     }
     
     $testScript = $PSCommandPath.Replace('.Tests.ps1', '.ps1')
+    $testParams = @{
+        ScriptAdmin = 'amdin@contoso.com'
+    }
 
     Mock Get-ScheduledTask
     Mock Get-ScheduledTaskInfo
@@ -40,7 +43,7 @@ Describe 'do not start tasks' {
             ) | New-TaskObjectsHC
         }
             
-        & $testScript
+        & $testScript @testParams
             
         Should -Not -Invoke Send-MailHC 
         Should -Not -Invoke Start-ScheduledTask 
@@ -55,7 +58,7 @@ Describe 'do not start tasks' {
             ) | New-TaskObjectsHC
         }
             
-        & $testScript
+        & $testScript @testParams
             
         Should -Not -Invoke Send-MailHC
         Should -Not -Invoke Start-ScheduledTask
@@ -73,7 +76,7 @@ Describe 'do not start tasks' {
             @{LastTaskResult = '267011' }
         }
             
-        & $testScript 
+        & $testScript @testParams
             
         Should -Not -Invoke Send-MailHC
         Should -Not -Invoke Start-ScheduledTask
@@ -94,13 +97,13 @@ Describe 'start tasks that are not running when' {
             ) | New-TaskObjectsHC
         }
             
-        . $testScript -AlwaysRunningTaskName 'Pester START ME'
+        . $testScript @testParams -AlwaysRunningTaskName 'Pester START ME'
             
         Should -Invoke Start-ScheduledTask -Exactly -Times 1 -ParameterFilter {
             ($InputObject.TaskName -eq 'Pester START ME task')
         }
         Should -Invoke Send-MailHC -Exactly -Times 1 -ParameterFilter {
-            ($To -eq $ScriptAdmin) -and 
+            ($To -eq $testParams.ScriptAdmin) -and 
             ($Priority -eq 'High') -and
             ($Message -like '*Pester START ME task*') -and
             ($Subject -eq '1 task started')
@@ -123,13 +126,13 @@ Describe 'start tasks that are not running when' {
             @{LastTaskResult = '1' }
         }
             
-        . $testScript
+        . $testScript @testParams
             
         Should -Invoke Start-ScheduledTask -Exactly -Times 1 -ParameterFilter {
             ($InputObject.TaskName -eq 'Pester START ME task')
         }
         Should -Invoke Send-MailHC -Exactly -Times 1 -ParameterFilter {
-            ($To -eq $ScriptAdmin) -and 
+            ($To -eq $testParams.ScriptAdmin) -and 
             ($Priority -eq 'High') -and
             ($Message -like '*Pester START ME task*') -and
             ($Subject -eq '1 task started')

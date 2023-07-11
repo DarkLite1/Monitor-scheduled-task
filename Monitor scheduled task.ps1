@@ -42,7 +42,10 @@ Param (
     [String]$ScriptName = 'Monitor scheduled task (ALL)',
     [String]$TaskPath = '\HCScripts',
     [String[]]$AlwaysRunningTaskName = ('Monitor mailbox', 'Monitor folder'),
-    [String[]]$ScriptAdmin = $env:POWERSHELL_SCRIPT_ADMIN
+    [String[]]$ScriptAdmin = @(
+        $env:POWERSHELL_SCRIPT_ADMIN,
+        $env:POWERSHELL_SCRIPT_ADMIN_BACKUP
+    )
 )
 
 Begin {
